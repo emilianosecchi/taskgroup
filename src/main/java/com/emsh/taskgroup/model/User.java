@@ -3,23 +3,16 @@ package com.emsh.taskgroup.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
 import java.util.Objects;
 
 @Getter
 @Setter
 @ToString
-@RequiredArgsConstructor
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "User", indexes = {
-        @Index(name = "idx_user_email_unq", columnList = "email", unique = true)
-})
+@Table(name = "_User")
 public class User {
 
     @Id
