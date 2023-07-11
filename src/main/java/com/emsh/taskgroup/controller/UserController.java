@@ -1,11 +1,12 @@
 package com.emsh.taskgroup.controller;
 
+import com.emsh.taskgroup.dto.request.AuthenticationRequest;
 import com.emsh.taskgroup.dto.request.RegisterRequest;
+import com.emsh.taskgroup.dto.response.AuthenticationResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
 import com.emsh.taskgroup.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +29,16 @@ public class UserController {
         try {
             userService.register(request);
             return ResponseEntity.ok("Usuario creado");
+        } catch (CustomApiException e) {
+            return new ResponseEntity<>(e, e.getHttpStatus());
+        }
+    }
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<Object> authenticate(@Valid @RequestBody AuthenticationRequest request) {
+        try {
+            AuthenticationResponse authResponse = userService.authenticate(request);
+            return ResponseEntity.ok(authResponse);
         } catch (CustomApiException e) {
             return new ResponseEntity<>(e, e.getHttpStatus());
         }

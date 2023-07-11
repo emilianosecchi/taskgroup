@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -33,13 +34,13 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        // Por defecto utiliza un Bean con el nombre de 'corsConfigurationSource'
-        return httpSecurity.cors(Customizer.withDefaults())
+        return httpSecurity
+                .csrf(csrf -> csrf.disable())
+                .cors(Customizer.withDefaults()) // Por defecto utiliza un Bean con el nombre de 'corsConfigurationSource'
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // 'login' y 'register' son los únicos endpoints donde no se solicita autenticación
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers(HttpMethod.POST, "/user/register", "/user/authenticate").permitAll()
+                        .anyRequest().authenticated()) // 'login' y 'authenticate' son los únicos endpoints donde no se solicita autenticación
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
