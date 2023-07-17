@@ -25,23 +25,15 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Object> register(@Valid @RequestBody RegisterRequest request) {
-        try {
-            userService.register(request);
-            return ResponseEntity.ok("Usuario creado");
-        } catch (CustomApiException e) {
-            return new ResponseEntity<>(e, e.getHttpStatus());
-        }
+    public ResponseEntity<Object> register(@Valid @RequestBody RegisterRequest request) throws CustomApiException {
+        userService.register(request);
+        return ResponseEntity.ok("Usuario creado");
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<Object> authenticate(@Valid @RequestBody AuthenticationRequest request) {
-        try {
-            AuthenticationResponse authResponse = userService.authenticate(request);
-            return ResponseEntity.ok(authResponse);
-        } catch (CustomApiException e) {
-            return new ResponseEntity<>(e, e.getHttpStatus());
-        }
+    public ResponseEntity<Object> authenticate(@Valid @RequestBody AuthenticationRequest request) throws CustomApiException {
+        AuthenticationResponse authResponse = userService.authenticate(request);
+        return ResponseEntity.ok(authResponse);
     }
 
 }
