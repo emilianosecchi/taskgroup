@@ -3,6 +3,8 @@ package com.emsh.taskgroup.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
+
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -18,13 +20,21 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     private String firstName;
     private String lastName;
-    @Column(unique = true)
+
+    @Column(unique = true, updatable = false)
     private String email;
+
     private String password;
+
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "user")
+    private List<UserGroup> groups;
 
     @Override
     public final boolean equals(Object o) {
