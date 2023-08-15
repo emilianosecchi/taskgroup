@@ -5,6 +5,7 @@ import com.emsh.taskgroup.exception.CustomApiException;
 import com.emsh.taskgroup.model.Group;
 import com.emsh.taskgroup.model.User;
 import com.emsh.taskgroup.model.UserGroup;
+import com.emsh.taskgroup.model.UserGroupId;
 import com.emsh.taskgroup.repository.GroupRepository;
 import com.emsh.taskgroup.repository.UserGroupRepository;
 import com.emsh.taskgroup.repository.UserRepository;
@@ -31,8 +32,10 @@ public class GroupService {
     }
 
     @Transactional
-    public void createGroup(CreateGroupRequest request) {
+    public void createGroup(CreateGroupRequest request) throws CustomApiException {
         Optional<User> user = userRepository.findById(request.getUserId());
+        if (user.isEmpty())
+            throw new CustomApiException("El usuario que desea realizar la acción no existe.", HttpStatus.BAD_REQUEST);
         Group group = Group.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -40,6 +43,9 @@ public class GroupService {
                 .build();
         groupRepository.save(group);
         UserGroup userGroup = UserGroup.builder()
+                .id(
+                    new UserGroupId(user.get().getId(), group.getId())
+                )
                 .user(user.get())
                 .group(group)
                 .isAdmin(true)

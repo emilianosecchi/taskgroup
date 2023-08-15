@@ -1,6 +1,7 @@
 package com.emsh.taskgroup.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CreateGroupRequest {
 
-    @NotBlank
+    @NotNull
     private Long userId;
     @NotBlank
     private String name;

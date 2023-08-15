@@ -3,8 +3,6 @@ package com.emsh.taskgroup.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 @AllArgsConstructor

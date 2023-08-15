@@ -27,7 +27,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<Object> register(@Valid @RequestBody RegisterRequest request) throws CustomApiException {
         userService.register(request);
-        return ResponseEntity.ok("Usuario creado");
+        return ResponseEntity.ok("El usuario se ha creado exitosamente.");
     }
 
     @PostMapping("/authenticate")
