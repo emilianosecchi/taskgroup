@@ -6,10 +6,7 @@ import com.emsh.taskgroup.service.GroupService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/group")
@@ -32,6 +29,11 @@ public class GroupController {
     public ResponseEntity<Object> deleteGroup(@RequestParam(name = "user_id") Long userId, @RequestParam(name = "group_id") Long groupId) throws CustomApiException {
         groupService.deleteGroup(userId, groupId);
         return ResponseEntity.ok("El grupo se ha eliminado exitosamente.");
+    }
+
+    @GetMapping("/get-all-groups")
+    public ResponseEntity<Object> getAllGroupsForUser(@RequestParam(name = "user_id") Long userId) throws CustomApiException {
+        return ResponseEntity.ok(groupService.getAllGroupsForUser(userId));
     }
 
 }

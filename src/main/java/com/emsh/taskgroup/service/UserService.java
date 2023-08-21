@@ -4,7 +4,9 @@ import com.emsh.taskgroup.config.JwtService;
 import com.emsh.taskgroup.dto.request.AuthenticationRequest;
 import com.emsh.taskgroup.dto.request.RegisterRequest;
 import com.emsh.taskgroup.dto.response.AuthenticationResponse;
+import com.emsh.taskgroup.dto.response.GroupResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
+import com.emsh.taskgroup.model.Group;
 import com.emsh.taskgroup.model.Role;
 import com.emsh.taskgroup.model.User;
 import com.emsh.taskgroup.model.UserDetailsImpl;
@@ -17,6 +19,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -59,7 +63,7 @@ public class UserService {
                 String jwtToken = jwtService.generateToken(
                         new UserDetailsImpl(user.get())
                 );
-                return new AuthenticationResponse(jwtToken);
+                return new AuthenticationResponse(jwtToken, user.get().getId());
             } else
                 throw new CustomApiException("No fue posible iniciar la sesión del usuario", HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (AuthenticationException e) {

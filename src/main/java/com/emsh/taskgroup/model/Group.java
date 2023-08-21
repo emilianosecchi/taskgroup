@@ -43,6 +43,11 @@ public class Group {
                 .toList();
     }
 
+    /**
+     * Verifica si un usuario es administrador de un grupo
+     * @param userId: id del usuario que se quiere verificar
+     * @return true: si el userId proporcionado corresponde a un usuario administrador del grupo, false caso contrario
+     */
     public boolean checkIfUserIsAdmin(Long userId) {
         return getAdmins()
                 .stream()

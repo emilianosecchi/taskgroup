@@ -52,4 +52,8 @@ public class User {
         return getClass().hashCode();
     }
 
+    public List<Group> getAllGroups() {
+        return groups.stream().map(UserGroup::getGroup).toList();
+    }
+
 }
