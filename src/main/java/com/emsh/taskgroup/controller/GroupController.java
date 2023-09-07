@@ -21,8 +21,7 @@ public class GroupController {
 
     @RequestMapping("/create")
     public ResponseEntity<Object> createGroup(@Valid @RequestBody CreateGroupRequest request) throws CustomApiException {
-        groupService.createGroup(request);
-        return ResponseEntity.ok("El grupo se ha creado exitosamente.");
+        return ResponseEntity.ok(groupService.createGroup(request));
     }
 
     @RequestMapping("/delete")

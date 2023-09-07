@@ -3,10 +3,7 @@ package com.emsh.taskgroup.service;
 import com.emsh.taskgroup.dto.request.CreateGroupRequest;
 import com.emsh.taskgroup.dto.response.GroupResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
-import com.emsh.taskgroup.model.Group;
-import com.emsh.taskgroup.model.User;
-import com.emsh.taskgroup.model.UserGroup;
-import com.emsh.taskgroup.model.UserGroupId;
+import com.emsh.taskgroup.model.*;
 import com.emsh.taskgroup.repository.GroupRepository;
 import com.emsh.taskgroup.repository.UserGroupRepository;
 import com.emsh.taskgroup.repository.UserRepository;
@@ -14,11 +11,12 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.util.EnumUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class GroupService {
@@ -35,13 +33,22 @@ public class GroupService {
     }
 
     @Transactional
-    public void createGroup(CreateGroupRequest request) throws CustomApiException {
+    public GroupResponse createGroup(CreateGroupRequest request) throws CustomApiException {
         var user = userRepository.findById(request.getUserId());
         if (user.isEmpty())
             throw new CustomApiException("El usuario que desea realizar la acción no existe.", HttpStatus.BAD_REQUEST);
+
+        GroupCategory category;
+        try {
+            category = EnumUtils.findEnumInsensitiveCase(GroupCategory.class, request.getCategory());
+        } catch (IllegalArgumentException e) {
+            throw new CustomApiException("La categoría seleccionada no es válida.", HttpStatus.BAD_REQUEST);
+        }
+
         var group = Group.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .category(category)
                 .creationDate(LocalDate.now())
                 .build();
         groupRepository.save(group);
@@ -54,6 +61,15 @@ public class GroupService {
                 .isAdmin(true)
                 .build();
         userGroupRepository.save(userGroup);
+        var groupCreator = new GroupResponse.UserDTO(
+                user.get().getId(),
+                user.get().getFirstName(),
+                user.get().getLastName()
+        );
+        var gr = GroupResponse.mapGroupToDto(group);
+        gr.getParticipants().add(groupCreator);
+        gr.getAdmins().add(groupCreator);
+        return gr;
     }
 
     public void deleteGroup(Long userId, Long groupId) throws CustomApiException {
@@ -78,14 +94,8 @@ public class GroupService {
         List<GroupResponse> response = new ArrayList<>();
 
         for (Group group : user.get().getAllGroups()) {
-            var gr = GroupResponse.builder()
-                    .id(group.getId())
-                    .name(group.getName())
-                    .description(group.getDescription())
-                    .creationDate(group.getCreationDate())
-                    .participants(new ArrayList<>())
-                    .admins(new ArrayList<>())
-                    .build();
+
+            var gr = GroupResponse.mapGroupToDto(group);
 
             group.getParticipants().forEach(
                     userGroup -> {
@@ -95,7 +105,8 @@ public class GroupService {
                                  userGroup.getUser().getLastName()
                          );
                          gr.getParticipants().add(userDTO);
-                         if (userGroup.getIsAdmin()) gr.getAdmins().add(userDTO);
+                         if (userGroup.getIsAdmin())
+                             gr.getAdmins().add(userDTO);
                     }
             );
             response.add(gr);

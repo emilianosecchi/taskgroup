@@ -28,6 +28,9 @@ public class Group {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    private GroupCategory category;
+
     public List<User> getAdmins() {
         return participants
                 .stream()

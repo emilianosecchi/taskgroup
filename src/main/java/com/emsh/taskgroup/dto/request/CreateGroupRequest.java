@@ -1,5 +1,6 @@
 package com.emsh.taskgroup.dto.request;
 
+import com.emsh.taskgroup.model.GroupCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -19,5 +20,7 @@ public class CreateGroupRequest {
     private String name;
     @NotBlank
     private String description;
+    @NotBlank
+    private String category;
 
 }
