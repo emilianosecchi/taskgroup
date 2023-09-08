@@ -7,6 +7,7 @@ import com.emsh.taskgroup.model.*;
 import com.emsh.taskgroup.repository.GroupRepository;
 import com.emsh.taskgroup.repository.UserGroupRepository;
 import com.emsh.taskgroup.repository.UserRepository;
+import com.emsh.taskgroup.util.StringEncryptor;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,6 @@ import org.yaml.snakeyaml.util.EnumUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -25,11 +25,14 @@ public class GroupService {
     private final UserRepository userRepository;
     private final UserGroupRepository userGroupRepository;
 
+    private final StringEncryptor stringEncryptor;
+
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, UserGroupRepository userGroupRepository) {
+    public GroupService(GroupRepository groupRepository, UserRepository userRepository, UserGroupRepository userGroupRepository, StringEncryptor stringEncryptor) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.userGroupRepository = userGroupRepository;
+        this.stringEncryptor = stringEncryptor;
     }
 
     @Transactional
@@ -52,15 +55,7 @@ public class GroupService {
                 .creationDate(LocalDate.now())
                 .build();
         groupRepository.save(group);
-        var userGroup = UserGroup.builder()
-                .id(
-                    new UserGroupId(user.get().getId(), group.getId())
-                )
-                .user(user.get())
-                .group(group)
-                .isAdmin(true)
-                .build();
-        userGroupRepository.save(userGroup);
+        addParticipant(user.get(), group, true);
         var groupCreator = new GroupResponse.UserDTO(
                 user.get().getId(),
                 user.get().getFirstName(),
@@ -72,6 +67,12 @@ public class GroupService {
         return gr;
     }
 
+    /**
+     * Elimina el grupo
+     * @param userId: id del User que desea borrar el grupo.
+     * @param groupId: id del Group que se desea borrar.
+     * @throws CustomApiException
+     */
     public void deleteGroup(Long userId, Long groupId) throws CustomApiException {
         var group = groupRepository.findById(groupId);
         if (group.isEmpty())
@@ -98,21 +99,43 @@ public class GroupService {
             var gr = GroupResponse.mapGroupToDto(group);
 
             group.getParticipants().forEach(
-                    userGroup -> {
-                         var userDTO = new GroupResponse.UserDTO(
-                                 userGroup.getUser().getId(),
-                                 userGroup.getUser().getFirstName(),
-                                 userGroup.getUser().getLastName()
-                         );
-                         gr.getParticipants().add(userDTO);
-                         if (userGroup.getIsAdmin())
-                             gr.getAdmins().add(userDTO);
-                    }
+                userGroup -> {
+                     var userDTO = new GroupResponse.UserDTO(
+                             userGroup.getUser().getId(),
+                             userGroup.getUser().getFirstName(),
+                             userGroup.getUser().getLastName()
+                     );
+                     gr.getParticipants().add(userDTO);
+                     if (userGroup.getIsAdmin()) {
+                         gr.getAdmins().add(userDTO);
+                         try {
+                             gr.setInvitationLink(stringEncryptor.encrypt(group.getId().toString()));
+                         } catch (Exception ignored) {
+                             ;
+                         }
+                     }
+                }
             );
             response.add(gr);
         }
 
         return response;
+    }
+
+    /**
+     * Agrega un nuevo participante al grupo.
+     * @param user: User que se desea agregar como participante al grupo.
+     * @param group: Group al que se desea agregar el participante.
+     * @param isAdmin: true si el usuario a agregar va a ser administrador del grupo, false caso contrario.
+     */
+    public void addParticipant(User user, Group group, Boolean isAdmin)  {
+        var userGroup = UserGroup.builder()
+                .id(new UserGroupId(user.getId(), group.getId()))
+                .user(user)
+                .group(group)
+                .isAdmin(isAdmin)
+                .build();
+        userGroupRepository.save(userGroup);
     }
 
 }
