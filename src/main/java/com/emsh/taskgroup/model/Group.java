@@ -47,12 +47,25 @@ public class Group {
     }
 
     /**
-     * Verifica si un usuario es administrador de un grupo
+     * Verifica si un usuario es administrador del grupo
      * @param userId: id del usuario que se quiere verificar
      * @return true: si el userId proporcionado corresponde a un usuario administrador del grupo, false caso contrario
      */
     public boolean checkIfUserIsAdmin(Long userId) {
         return getAdmins()
+                .stream()
+                .map(User::getId)
+                .toList()
+                .contains(userId);
+    }
+
+    /**
+     * Verifica si un usuario es participante del grupo
+     * @param userId: id del usuario que se quiere verificar
+     * @return true: si el userId proporcionado corresponde a un usuario participante del grupo, false caso contrario
+     */
+    public boolean checkIfUserIsParticipant(Long userId) {
+        return getAllParticipants()
                 .stream()
                 .map(User::getId)
                 .toList()

@@ -20,10 +20,11 @@ public class StringEncryptor {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.ENCRYPT_MODE, key);
         byte[] encryptedBytes = cipher.doFinal(input.getBytes());
-        return Base64.getEncoder().encodeToString(encryptedBytes);
+        return Base64.getEncoder().encodeToString(encryptedBytes).replaceAll("/", "BAR");
     }
 
     public String decrypt(String encryptedInput) throws Exception {
+        encryptedInput = encryptedInput.replaceAll("BAR", "/");
         Key key = new SecretKeySpec(SECRET_KEY.getBytes(), ALGORITHM);
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
         cipher.init(Cipher.DECRYPT_MODE, key);

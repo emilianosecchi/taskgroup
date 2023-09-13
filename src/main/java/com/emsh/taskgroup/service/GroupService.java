@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Long.parseLong;
+
 @Service
 public class GroupService {
 
@@ -136,6 +138,29 @@ public class GroupService {
                 .isAdmin(isAdmin)
                 .build();
         userGroupRepository.save(userGroup);
+    }
+
+    public GroupResponse joinGroup(String encryptedGroup, Long userId) throws CustomApiException {
+        String groupId;
+        try {
+            groupId = stringEncryptor.decrypt(encryptedGroup);
+        } catch (Exception e) {
+            throw new CustomApiException("Hubo un error al procesar la solicitud de ingreso al grupo", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (groupId.isBlank() || groupId.isEmpty()) {
+            throw new CustomApiException("El grupo al que desea unirse no es válido.", HttpStatus.BAD_REQUEST);
+        }
+        var group = groupRepository.findById(parseLong(groupId));
+        if (group.isEmpty())
+            throw new CustomApiException("El grupo al que desea unirse no existe.", HttpStatus.BAD_REQUEST);
+
+        if (group.get().checkIfUserIsParticipant(userId)) {
+            throw new CustomApiException("Ya formas parte de este grupo.", HttpStatus.BAD_REQUEST);
+        }
+
+        var gr = GroupResponse.mapGroupToDto(group.get());
+        gr.setGroupSize(group.get().getParticipants().size());
+        return gr;
     }
 
 }

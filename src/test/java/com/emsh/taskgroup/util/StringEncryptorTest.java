@@ -17,7 +17,7 @@ public class StringEncryptorTest {
 
     @Test
     public void EncryptAndDecryptStringTest() throws Exception {
-        var text = "PRUEBA";
+        var text = "1";
         var encryptedText = stringEncryptor.encrypt(text);
         Assertions.assertNotEquals(encryptedText, text);
         var decryptedText = stringEncryptor.decrypt(encryptedText);

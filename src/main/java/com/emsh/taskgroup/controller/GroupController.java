@@ -35,4 +35,9 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getAllGroupsForUser(userId));
     }
 
+    @GetMapping("/join")
+    public ResponseEntity<Object> joinGroup(@RequestParam(name = "group") String encryptedGroup, @RequestParam(name = "user_id") Long userId) throws CustomApiException {
+        return ResponseEntity.ok(groupService.joinGroup(encryptedGroup, userId));
+    }
+
 }

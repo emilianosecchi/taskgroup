@@ -22,6 +22,7 @@ public class GroupResponse {
     private List<UserDTO> participants;
     private List<UserDTO> admins;
     private String invitationLink;
+    private Integer groupSize;
 
     public record UserDTO(Long userId, String firstName, String lastName) {}
 
