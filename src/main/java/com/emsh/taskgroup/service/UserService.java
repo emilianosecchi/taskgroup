@@ -39,6 +39,13 @@ public class UserService {
         this.authenticationManager = authenticationManager;
     }
 
+    public User findUserById(Long userId) throws CustomApiException {
+        var user = userRepository.findById(userId);
+        if (user.isEmpty())
+            throw new CustomApiException("El usuario no existe.", HttpStatus.BAD_REQUEST);
+        return user.get();
+    }
+
     public void register(RegisterRequest request) throws CustomApiException {
         if (userRepository.findByEmail(request.getEmail()).isEmpty()) {
             User user = User.builder()

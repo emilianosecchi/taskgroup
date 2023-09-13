@@ -24,24 +24,30 @@ import static java.lang.Long.parseLong;
 public class GroupService {
 
     private final GroupRepository groupRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final UserGroupRepository userGroupRepository;
 
     private final StringEncryptor stringEncryptor;
 
     @Autowired
-    public GroupService(GroupRepository groupRepository, UserRepository userRepository, UserGroupRepository userGroupRepository, StringEncryptor stringEncryptor) {
+    public GroupService(GroupRepository groupRepository, UserService userService, UserGroupRepository userGroupRepository, StringEncryptor stringEncryptor) {
         this.groupRepository = groupRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.userGroupRepository = userGroupRepository;
         this.stringEncryptor = stringEncryptor;
     }
 
+    public Group findGroupById(Long groupId) throws CustomApiException {
+        var group = groupRepository.findById(groupId);
+        if (group.isEmpty())
+            throw new CustomApiException("El grupo no existe.", HttpStatus.BAD_REQUEST);
+        return group.get();
+    }
+
     @Transactional
     public GroupResponse createGroup(CreateGroupRequest request) throws CustomApiException {
-        var user = userRepository.findById(request.getUserId());
-        if (user.isEmpty())
-            throw new CustomApiException("El usuario que desea realizar la acción no existe.", HttpStatus.BAD_REQUEST);
+
+        User user = userService.findUserById(request.getUserId());
 
         GroupCategory category;
         try {
@@ -57,11 +63,11 @@ public class GroupService {
                 .creationDate(LocalDate.now())
                 .build();
         groupRepository.save(group);
-        addParticipant(user.get(), group, true);
+        addParticipant(user, group, true);
         var groupCreator = new GroupResponse.UserDTO(
-                user.get().getId(),
-                user.get().getFirstName(),
-                user.get().getLastName()
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName()
         );
         var gr = GroupResponse.mapGroupToDto(group);
         gr.getParticipants().add(groupCreator);
@@ -76,27 +82,21 @@ public class GroupService {
      * @throws CustomApiException
      */
     public void deleteGroup(Long userId, Long groupId) throws CustomApiException {
-        var group = groupRepository.findById(groupId);
-        if (group.isEmpty())
-            throw new CustomApiException("El grupo que se desea borrar no existe.", HttpStatus.BAD_REQUEST);
 
-        if (!userRepository.existsById(userId))
-            throw new CustomApiException("El usuario que desea realizar la acción no existe.", HttpStatus.BAD_REQUEST);
+        Group group = findGroupById(groupId);
 
-        if (!group.get().checkIfUserIsAdmin(userId))
+        userService.findUserById(userId);
+
+        if (!group.checkIfUserIsAdmin(userId))
             throw new CustomApiException("El usuario no posee los permisos para borrar el grupo.", HttpStatus.FORBIDDEN);
 
-        groupRepository.delete(group.get());
+        groupRepository.delete(group);
     }
 
     public List<GroupResponse> getAllGroupsForUser(Long userId) throws CustomApiException {
-        var user = userRepository.findById(userId);
-        if (user.isEmpty())
-            throw new CustomApiException("El usuario que desea realizar la acción no existe", HttpStatus.BAD_REQUEST);
-
+        User user = userService.findUserById(userId);
         List<GroupResponse> response = new ArrayList<>();
-
-        for (Group group : user.get().getAllGroups()) {
+        for (Group group : user.getAllGroups()) {
 
             var gr = GroupResponse.mapGroupToDto(group);
 
@@ -140,27 +140,31 @@ public class GroupService {
         userGroupRepository.save(userGroup);
     }
 
-    public GroupResponse joinGroup(String encryptedGroup, Long userId) throws CustomApiException {
+    public GroupResponse joinGroup(String encryptedGroupId, Long userId) throws CustomApiException {
+        Long groupId = decryptGroupId(encryptedGroupId);
+
+        Group group = findGroupById(groupId);
+
+        if (group.checkIfUserIsParticipant(userId)) {
+            throw new CustomApiException("Ya formas parte de este grupo.", HttpStatus.BAD_REQUEST);
+        }
+
+        var gr = GroupResponse.mapGroupToDto(group);
+        gr.setGroupSize(group.getParticipants().size());
+        return gr;
+    }
+
+    public Long decryptGroupId(String encryptedGroupId) throws CustomApiException {
         String groupId;
         try {
-            groupId = stringEncryptor.decrypt(encryptedGroup);
+            groupId = stringEncryptor.decrypt(encryptedGroupId);
         } catch (Exception e) {
             throw new CustomApiException("Hubo un error al procesar la solicitud de ingreso al grupo", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (groupId.isBlank() || groupId.isEmpty()) {
             throw new CustomApiException("El grupo al que desea unirse no es válido.", HttpStatus.BAD_REQUEST);
         }
-        var group = groupRepository.findById(parseLong(groupId));
-        if (group.isEmpty())
-            throw new CustomApiException("El grupo al que desea unirse no existe.", HttpStatus.BAD_REQUEST);
-
-        if (group.get().checkIfUserIsParticipant(userId)) {
-            throw new CustomApiException("Ya formas parte de este grupo.", HttpStatus.BAD_REQUEST);
-        }
-
-        var gr = GroupResponse.mapGroupToDto(group.get());
-        gr.setGroupSize(group.get().getParticipants().size());
-        return gr;
+        return parseLong(groupId);
     }
 
 }
