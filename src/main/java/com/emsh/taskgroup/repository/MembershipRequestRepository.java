@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface MembershipRequestRepository extends JpaRepository<MembershipRequest, Long> {
 
-    Optional<MembershipRequest> findByUserIdAndGroupIdAndStatusNot(Long userId, Long GroupId, MembershipRequestStatus status);
+    Optional<MembershipRequest> findByRequesterIdAndGroupIdAndStatusNot(Long userId, Long GroupId, MembershipRequestStatus status);
 
     Optional<List<MembershipRequest>> findByGroupIdAndStatusEquals(Long groupId, MembershipRequestStatus status);
 
@@ -21,7 +21,7 @@ public interface MembershipRequestRepository extends JpaRepository<MembershipReq
     }
 
     default Boolean requestAlreadyExists(Long userId, Long GroupId) {
-        return findByUserIdAndGroupIdAndStatusNot(userId, GroupId, MembershipRequestStatus.REJECTED).isPresent();
+        return findByRequesterIdAndGroupIdAndStatusNot(userId, GroupId, MembershipRequestStatus.REJECTED).isPresent();
     }
 
 
