@@ -1,5 +1,6 @@
 package com.emsh.taskgroup.service;
 
+import com.emsh.taskgroup.dto.response.PendingGroupRequestsResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
 import com.emsh.taskgroup.model.Group;
 import com.emsh.taskgroup.model.MembershipRequest;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MembershipRequestService {
@@ -79,8 +82,12 @@ public class MembershipRequestService {
         return membershipRequestRepository.requestAlreadyExists(userId, groupId);
     }
 
-    public List<MembershipRequest> findAllPendingRequestForGroup(Long groupId) {
-        return membershipRequestRepository.findAllPendingRequestsForGroup(groupId).get();
+    public PendingGroupRequestsResponse findAllPendingRequestForGroup(Long groupId) {
+        var optPendingRequests = membershipRequestRepository.findAllPendingRequestsForGroup(groupId);
+        if (optPendingRequests.isPresent()) {
+            return new PendingGroupRequestsResponse(optPendingRequests.get());
+        } else
+            return new PendingGroupRequestsResponse(new ArrayList<>());
     }
 
 }
