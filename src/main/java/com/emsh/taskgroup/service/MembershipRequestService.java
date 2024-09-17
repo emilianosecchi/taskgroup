@@ -1,6 +1,7 @@
 package com.emsh.taskgroup.service;
 
 import com.emsh.taskgroup.dto.response.PendingGroupRequestsResponse;
+import com.emsh.taskgroup.event.events.MembershipRequestCompletedEvent;
 import com.emsh.taskgroup.exception.CustomApiException;
 import com.emsh.taskgroup.model.Group;
 import com.emsh.taskgroup.model.MembershipRequest;
@@ -8,12 +9,11 @@ import com.emsh.taskgroup.model.MembershipRequestStatus;
 import com.emsh.taskgroup.model.User;
 import com.emsh.taskgroup.repository.MembershipRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MembershipRequestService {
@@ -23,12 +23,14 @@ public class MembershipRequestService {
     private final GroupService groupService;
 
     private final UserService userService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
-    public MembershipRequestService(MembershipRequestRepository membershipRequestRepository, GroupService groupService, UserService userService) {
+    public MembershipRequestService(MembershipRequestRepository membershipRequestRepository, GroupService groupService, UserService userService, ApplicationEventPublisher applicationEventPublisher) {
         this.membershipRequestRepository = membershipRequestRepository;
         this.groupService = groupService;
         this.userService = userService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public MembershipRequest findMembershipRequestById(Long membershipRequestId) throws CustomApiException {
@@ -68,6 +70,9 @@ public class MembershipRequestService {
 
         membershipRequest.setStatus(status);
         membershipRequestRepository.save(membershipRequest);
+        applicationEventPublisher.publishEvent(
+                new MembershipRequestCompletedEvent(this, membershipRequest.getGroup(), membershipRequest.getRequester(), status)
+        );
     }
 
     public void acceptRequest(Long groupAdminId, Long membershipRequestId) throws CustomApiException {
