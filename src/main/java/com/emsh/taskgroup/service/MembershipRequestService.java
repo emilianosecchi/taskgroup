@@ -8,6 +8,7 @@ import com.emsh.taskgroup.model.MembershipRequest;
 import com.emsh.taskgroup.model.MembershipRequestStatus;
 import com.emsh.taskgroup.model.User;
 import com.emsh.taskgroup.repository.MembershipRequestRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
@@ -19,9 +20,7 @@ import java.util.ArrayList;
 public class MembershipRequestService {
 
     private final MembershipRequestRepository membershipRequestRepository;
-
     private final GroupService groupService;
-
     private final UserService userService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -60,27 +59,30 @@ public class MembershipRequestService {
         membershipRequestRepository.save(membershipRequest);
     }
 
-    private void manageRequest(Long groupAdminId, Long membershipRequestId, MembershipRequestStatus status) throws CustomApiException {
+    private MembershipRequest manageRequest(Long groupAdminId, Long membershipRequestId, MembershipRequestStatus status) throws CustomApiException {
         MembershipRequest membershipRequest = findMembershipRequestById(membershipRequestId);
         if (!membershipRequest.getStatus().equals(MembershipRequestStatus.PENDING))
             throw new CustomApiException("La solicitud ya se encuentra " + membershipRequest.getStatus().name().toLowerCase(), HttpStatus.BAD_REQUEST);
-
         if (!membershipRequest.getGroup().checkIfUserIsAdmin(groupAdminId))
             throw new CustomApiException("El usuario no posee los permisos para realizar la acción.", HttpStatus.FORBIDDEN);
-
         membershipRequest.setStatus(status);
-        membershipRequestRepository.save(membershipRequest);
+        return membershipRequestRepository.save(membershipRequest);
+    }
+
+    @Transactional
+    public void acceptRequest(Long groupAdminId, Long membershipRequestId) throws CustomApiException {
+        MembershipRequest request = manageRequest(groupAdminId, membershipRequestId, MembershipRequestStatus.ACCEPTED);
+        groupService.addParticipant(request.getRequester(), request.getGroup(), false);
         applicationEventPublisher.publishEvent(
-                new MembershipRequestCompletedEvent(this, membershipRequest.getGroup(), membershipRequest.getRequester(), status)
+                new MembershipRequestCompletedEvent(this, request.getGroup(), request.getRequester(), MembershipRequestStatus.ACCEPTED)
         );
     }
 
-    public void acceptRequest(Long groupAdminId, Long membershipRequestId) throws CustomApiException {
-        manageRequest(groupAdminId, membershipRequestId, MembershipRequestStatus.ACCEPTED);
-    }
-
     public void rejectRequest(Long groupAdminId, Long membershipRequestId) throws CustomApiException {
-        manageRequest(groupAdminId, membershipRequestId, MembershipRequestStatus.REJECTED);
+        MembershipRequest request = manageRequest(groupAdminId, membershipRequestId, MembershipRequestStatus.REJECTED);
+        applicationEventPublisher.publishEvent(
+                new MembershipRequestCompletedEvent(this, request.getGroup(), request.getRequester(), MembershipRequestStatus.REJECTED)
+        );
     }
 
     public boolean requestAlreadyExists(Long userId, Long groupId) {
