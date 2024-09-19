@@ -21,7 +21,7 @@ public class GroupResponse {
     private GroupCategory category;
     private List<UserDTO> participants;
     private List<UserDTO> admins;
-    private String invitationLink;
+    private String groupIdHash;
     private Integer groupSize;
 
     public record UserDTO(Long userId, String firstName, String lastName) {}

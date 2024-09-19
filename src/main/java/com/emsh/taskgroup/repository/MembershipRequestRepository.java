@@ -16,6 +16,8 @@ public interface MembershipRequestRepository extends JpaRepository<MembershipReq
 
     Optional<List<MembershipRequest>> findByGroupIdAndStatusEquals(Long groupId, MembershipRequestStatus status);
 
+    void deleteByRequesterIdAndGroupId(Long userId, Long GroupId);
+
     default Optional<List<MembershipRequest>> findAllPendingRequestsForGroup(Long groupId) {
         return findByGroupIdAndStatusEquals(groupId, MembershipRequestStatus.PENDING);
     }

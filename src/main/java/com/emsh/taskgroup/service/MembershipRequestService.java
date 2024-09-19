@@ -20,15 +20,11 @@ import java.util.ArrayList;
 public class MembershipRequestService {
 
     private final MembershipRequestRepository membershipRequestRepository;
-    private final GroupService groupService;
-    private final UserService userService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
-    public MembershipRequestService(MembershipRequestRepository membershipRequestRepository, GroupService groupService, UserService userService, ApplicationEventPublisher applicationEventPublisher) {
+    public MembershipRequestService(MembershipRequestRepository membershipRequestRepository, ApplicationEventPublisher applicationEventPublisher) {
         this.membershipRequestRepository = membershipRequestRepository;
-        this.groupService = groupService;
-        this.userService = userService;
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
@@ -39,24 +35,23 @@ public class MembershipRequestService {
         return mRequest.get();
     }
 
-    public void createRequest(Long userId, String encryptedGroupId) throws CustomApiException {
-        Long groupId = groupService.decryptGroupId(encryptedGroupId);
-        if (requestAlreadyExists(userId, groupId))
-            throw new CustomApiException("Ya existe una solicitud pendiente para unirte a este grupo", HttpStatus.CONFLICT);
-
-        Group group = groupService.findGroupById(groupId);
-        if (group.checkIfUserIsParticipant(userId))
-            throw new CustomApiException("El usuario ya es participante del grupo.", HttpStatus.BAD_REQUEST);
-
-        User user = userService.findUserById(userId);
-
+    public void createRequest(User user, Group group) throws CustomApiException {
         var membershipRequest = MembershipRequest.builder()
                 .requester(user)
                 .status(MembershipRequestStatus.PENDING)
                 .group(group)
                 .build();
-
         membershipRequestRepository.save(membershipRequest);
+    }
+
+    /**
+     * Cuando un usuario abandona un grupo también se debe eliminar la solicitud de membresía creada cuando se unió
+     * por primera vez al grupo.
+     * @param userId
+     * @param groupId
+     */
+    public void deleteRequest(Long userId, Long groupId) {
+        membershipRequestRepository.deleteByRequesterIdAndGroupId(userId, groupId);
     }
 
     private MembershipRequest manageRequest(Long groupAdminId, Long membershipRequestId, MembershipRequestStatus status) throws CustomApiException {
@@ -69,13 +64,12 @@ public class MembershipRequestService {
         return membershipRequestRepository.save(membershipRequest);
     }
 
-    @Transactional
-    public void acceptRequest(Long groupAdminId, Long membershipRequestId) throws CustomApiException {
+    public MembershipRequest acceptRequest(Long groupAdminId, Long membershipRequestId) throws CustomApiException {
         MembershipRequest request = manageRequest(groupAdminId, membershipRequestId, MembershipRequestStatus.ACCEPTED);
-        groupService.addParticipant(request.getRequester(), request.getGroup(), false);
         applicationEventPublisher.publishEvent(
                 new MembershipRequestCompletedEvent(this, request.getGroup(), request.getRequester(), MembershipRequestStatus.ACCEPTED)
         );
+        return request;
     }
 
     public void rejectRequest(Long groupAdminId, Long membershipRequestId) throws CustomApiException {

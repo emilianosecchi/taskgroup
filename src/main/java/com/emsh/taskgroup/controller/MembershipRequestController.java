@@ -1,6 +1,7 @@
 package com.emsh.taskgroup.controller;
 
 import com.emsh.taskgroup.exception.CustomApiException;
+import com.emsh.taskgroup.service.GroupManagementService;
 import com.emsh.taskgroup.service.MembershipRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +15,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class MembershipRequestController {
 
     private final MembershipRequestService membershipRequestService;
+    private final GroupManagementService groupManagementService;
 
     @Autowired
-    public MembershipRequestController(MembershipRequestService membershipRequestService) {
+    public MembershipRequestController(MembershipRequestService membershipRequestService, GroupManagementService groupManagementService) {
         this.membershipRequestService = membershipRequestService;
+        this.groupManagementService = groupManagementService;
     }
 
     @RequestMapping("/create")
-    public ResponseEntity<Object> createRequest(@RequestParam(name = "user_id") Long userId, @RequestParam(name = "group") String encryptedGroupId) throws CustomApiException {
-        membershipRequestService.createRequest(userId, encryptedGroupId);
+    public ResponseEntity<Object> createRequest(@RequestParam(name = "user_id") Long userId, @RequestParam(name = "group") String groupIdHash) throws CustomApiException {
+        groupManagementService.createMembershipRequest(
+                userId,
+                groupManagementService.decryptGroupId(groupIdHash)
+        );
         return ResponseEntity.ok("La solicitud se ha generado exitosamente.");
     }
 
@@ -34,13 +40,15 @@ public class MembershipRequestController {
 
     @RequestMapping("/accept")
     public ResponseEntity<Object> acceptRequest(@RequestParam(name = "admin_id") Long adminId, @RequestParam(name = "request_id") Long requestId) throws CustomApiException {
-        membershipRequestService.acceptRequest(adminId, requestId);
+        groupManagementService.acceptMembershipRequest(adminId, requestId);
         return ResponseEntity.ok("La solicitud se ha aceptado exitosamente.");
     }
 
     @GetMapping("/pending-requests")
-    public ResponseEntity<Object> getPendingRequests(@RequestParam(name = "group_id") Long groupId) {
-        return ResponseEntity.ok(membershipRequestService.findAllPendingRequestForGroup(groupId));
+    public ResponseEntity<Object> getPendingRequests(@RequestParam(name = "group_id") String groupIdHash) throws CustomApiException {
+        return ResponseEntity.ok(membershipRequestService.findAllPendingRequestForGroup(
+                groupManagementService.decryptGroupId(groupIdHash))
+        );
     }
 
 }
