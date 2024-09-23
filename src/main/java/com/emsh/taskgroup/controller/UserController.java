@@ -4,6 +4,7 @@ import com.emsh.taskgroup.dto.request.AuthenticationRequest;
 import com.emsh.taskgroup.dto.request.RegisterRequest;
 import com.emsh.taskgroup.dto.response.AuthenticationResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
+import com.emsh.taskgroup.service.GroupManagementService;
 import com.emsh.taskgroup.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final GroupManagementService groupManagementService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, GroupManagementService groupManagementService) {
         this.userService = userService;
+        this.groupManagementService = groupManagementService;
     }
 
     @PostMapping("/register")
@@ -31,6 +34,11 @@ public class UserController {
     public ResponseEntity<Object> authenticate(@Valid @RequestBody AuthenticationRequest request) throws CustomApiException {
         AuthenticationResponse authResponse = userService.authenticate(request);
         return ResponseEntity.ok(authResponse);
+    }
+
+    @GetMapping("/{userId}/groups")
+    public ResponseEntity<Object> getAllGroupsForUser(@PathVariable Long userId) throws CustomApiException {
+        return ResponseEntity.ok(groupManagementService.getAllGroupsForUser(userId));
     }
 
 }

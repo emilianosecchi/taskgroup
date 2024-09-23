@@ -25,12 +25,12 @@ public class GroupController {
         this.userGroupService = userGroupService;
     }
 
-    @RequestMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<Object> createGroup(@Valid @RequestBody CreateGroupRequest request) throws CustomApiException {
         return ResponseEntity.ok(groupManagementService.createGroup(request));
     }
 
-    @RequestMapping("/delete")
+    @PostMapping("/delete")
     public ResponseEntity<Object> deleteGroup(@RequestParam(name = "user_id") Long userId, @RequestParam(name = "group_id") String groupIdHash) throws CustomApiException {
         groupManagementService.deleteGroup(
                 userId,
@@ -39,18 +39,13 @@ public class GroupController {
         return ResponseEntity.ok("El grupo se ha eliminado exitosamente.");
     }
 
-    @RequestMapping("/leave")
+    @PostMapping("/leave")
     public ResponseEntity<Object> leaveGroup(@RequestParam(name = "user_id") Long userId, @RequestParam(name = "group_id") String groupIdHash) throws CustomApiException {
         userGroupService.removeParticipantFromGroup(
                 groupManagementService.decryptGroupId(groupIdHash),
                 userId
         );
         return ResponseEntity.ok("El usuario ha sido removido del grupo exitosamente.");
-    }
-
-    @GetMapping("/get-all-groups")
-    public ResponseEntity<Object> getAllGroupsForUser(@RequestParam(name = "user_id") Long userId) throws CustomApiException {
-        return ResponseEntity.ok(groupManagementService.getAllGroupsForUser(userId));
     }
 
     @GetMapping("/join")

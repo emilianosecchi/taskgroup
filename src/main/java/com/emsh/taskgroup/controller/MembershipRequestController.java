@@ -5,10 +5,7 @@ import com.emsh.taskgroup.service.GroupManagementService;
 import com.emsh.taskgroup.service.MembershipRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/membership")
@@ -23,7 +20,7 @@ public class MembershipRequestController {
         this.groupManagementService = groupManagementService;
     }
 
-    @RequestMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity<Object> createRequest(@RequestParam(name = "user_id") Long userId, @RequestParam(name = "group") String groupIdHash) throws CustomApiException {
         groupManagementService.createMembershipRequest(
                 userId,
@@ -32,13 +29,13 @@ public class MembershipRequestController {
         return ResponseEntity.ok("La solicitud se ha generado exitosamente.");
     }
 
-    @RequestMapping("/reject")
+    @PostMapping("/reject")
     public ResponseEntity<Object> rejectRequest(@RequestParam(name = "admin_id") Long adminId, @RequestParam(name = "request_id") Long requestId) throws CustomApiException  {
         membershipRequestService.rejectRequest(adminId, requestId);
         return ResponseEntity.ok("La solicitud se ha rechazado exitosamente.");
     }
 
-    @RequestMapping("/accept")
+    @PostMapping("/accept")
     public ResponseEntity<Object> acceptRequest(@RequestParam(name = "admin_id") Long adminId, @RequestParam(name = "request_id") Long requestId) throws CustomApiException {
         groupManagementService.acceptMembershipRequest(adminId, requestId);
         return ResponseEntity.ok("La solicitud se ha aceptado exitosamente.");
