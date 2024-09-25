@@ -11,7 +11,6 @@ public class NotificationController {
     @MessageMapping("/notifications")
     @SendTo("/topic/notifications")
     public void broadcastNotifications() {
-
     }
 
 }

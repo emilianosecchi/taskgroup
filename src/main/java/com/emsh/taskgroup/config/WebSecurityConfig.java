@@ -40,8 +40,9 @@ public class WebSecurityConfig {
                 .cors(Customizer.withDefaults()) // Por defecto utiliza un Bean con el nombre de 'corsConfigurationSource'
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/v3/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/user/register", "/user/authenticate").permitAll()
+                        .requestMatchers("/v3/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // Permito que se pueda acceder a las URls referidas a la documentación de la API.
+                        .requestMatchers(HttpMethod.GET,"/ws-notifications/**").permitAll() // Permito el acceso al WebSocket de notificaciones.
+                        .requestMatchers(HttpMethod.POST,"/user/register", "/user/authenticate").permitAll()
                         .anyRequest().authenticated()) // 'login' y 'authenticate' son los únicos endpoints donde no se solicita autenticación
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

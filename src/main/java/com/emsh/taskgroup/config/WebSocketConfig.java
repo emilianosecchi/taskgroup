@@ -1,6 +1,5 @@
 package com.emsh.taskgroup.config;
 
-import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -21,8 +20,8 @@ import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 @Configuration
-@Order(Ordered.HIGHEST_PRECEDENCE + 99)
 @EnableWebSocketMessageBroker
+@Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtService jwtService;
@@ -37,7 +36,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Endpoint donde el servidor WebSocket espera para realizar conexiones.
-        registry.addEndpoint("/ws-notifications").withSockJS();
+        registry.addEndpoint("/ws-notifications")
+                .setAllowedOrigins("http://localhost:3000")
+                .withSockJS();
     }
 
     @Override
