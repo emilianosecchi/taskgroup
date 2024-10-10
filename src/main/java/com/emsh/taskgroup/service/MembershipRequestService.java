@@ -2,6 +2,7 @@ package com.emsh.taskgroup.service;
 
 import com.emsh.taskgroup.dto.response.PendingGroupRequestsResponse;
 import com.emsh.taskgroup.event.events.MembershipRequestCompletedEvent;
+import com.emsh.taskgroup.event.events.MembershipRequestCreatedEvent;
 import com.emsh.taskgroup.exception.CustomApiException;
 import com.emsh.taskgroup.model.Group;
 import com.emsh.taskgroup.model.MembershipRequest;
@@ -42,6 +43,7 @@ public class MembershipRequestService {
                 .group(group)
                 .build();
         membershipRequestRepository.save(membershipRequest);
+        applicationEventPublisher.publishEvent(new MembershipRequestCreatedEvent(this, group, user));
     }
 
     /**

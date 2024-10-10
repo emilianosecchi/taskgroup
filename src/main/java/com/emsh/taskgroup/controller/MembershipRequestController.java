@@ -21,7 +21,7 @@ public class MembershipRequestController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Object> createRequest(@RequestParam(name = "user_id") Long userId, @RequestParam(name = "group") String groupIdHash) throws CustomApiException {
+    public ResponseEntity<Object> createRequest(@RequestParam(name = "group") String groupIdHash, @RequestParam(name = "user_id") Long userId) throws CustomApiException {
         groupManagementService.createMembershipRequest(
                 userId,
                 groupManagementService.decryptGroupId(groupIdHash)

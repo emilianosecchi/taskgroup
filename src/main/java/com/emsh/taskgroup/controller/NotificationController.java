@@ -1,16 +1,23 @@
 package com.emsh.taskgroup.controller;
 
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Controller
 public class NotificationController {
 
-    @MessageMapping("/notifications")
-    @SendTo("/topic/notifications")
-    public void broadcastNotifications() {
+    private final SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    public NotificationController(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    public void sendNotificationToUser(Long userId, String message) {
+        String destination = "/topic/user/" + userId + "/notifications";
+        messagingTemplate.convertAndSend(destination, message);
     }
 
 }
