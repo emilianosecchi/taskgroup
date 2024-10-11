@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table
+@NoArgsConstructor
 public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

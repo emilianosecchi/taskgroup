@@ -2,11 +2,18 @@ package com.emsh.taskgroup.repository;
 
 import com.emsh.taskgroup.model.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
-    // Consultar las notificaciones no leídas de un usuario
-    List<Notification> findByUserIdAndIsReadFalse(Long userId);
+    @Modifying
+    @Query("update Notification n set n.isRead = true where n.user.id = ?1 and n.isRead = false")
+    void markAllNotificationsAsRead(Long userId);
+
+    Optional<List<Notification>> findByUserId(Long userId);
+
 }
