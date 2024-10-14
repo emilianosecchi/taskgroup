@@ -2,7 +2,9 @@ package com.emsh.taskgroup.controller;
 
 
 import com.emsh.taskgroup.dto.request.CreateNotificationRequest;
+import com.emsh.taskgroup.dto.response.NotificationResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
+import com.emsh.taskgroup.model.Notification;
 import com.emsh.taskgroup.service.NotificationService;
 import com.emsh.taskgroup.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,9 @@ public class NotificationController {
         this.userService = userService;
     }
 
-    public void sendNotificationToUser(Long userId, String message) {
+    public void sendNotificationToUser(Long userId, NotificationResponse notificationResponse) {
         String destination = "/topic/user/" + userId + "/notifications";
-        messagingTemplate.convertAndSend(destination, message);
+        messagingTemplate.convertAndSend(destination, notificationResponse);
     }
 
     @GetMapping("/user/{userId}")
@@ -49,11 +51,23 @@ public class NotificationController {
 
     @PostMapping("/create")
     public ResponseEntity<Object> createNotification(@RequestBody CreateNotificationRequest request) throws CustomApiException {
-        notificationService.createNotification(
+        var notification = notificationService.createNotification(
                 userService.findUserById(request.getUserId()),
                 request.getMessage()
         );
-        this.sendNotificationToUser(request.getUserId(), request.getMessage());
+        this.sendNotificationToUser(request.getUserId(), new NotificationResponse(notification));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<Object> deleteNotification(@RequestParam(name = "notification_id") Long notificationId) throws CustomApiException {
+        notificationService.deleteNotification(notificationId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/user/{userId}/delete-all")
+    public ResponseEntity<Object> deleteAllNotifications(@PathVariable Long userId) {
+        notificationService.deleteAllNotificationsForUser(userId);
         return ResponseEntity.ok().build();
     }
 

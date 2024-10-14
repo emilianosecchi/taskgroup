@@ -1,6 +1,7 @@
 package com.emsh.taskgroup.event.listeners;
 
 import com.emsh.taskgroup.controller.NotificationController;
+import com.emsh.taskgroup.dto.response.NotificationResponse;
 import com.emsh.taskgroup.event.events.*;
 import com.emsh.taskgroup.model.MembershipRequestStatus;
 import com.emsh.taskgroup.service.NotificationService;
@@ -21,8 +22,8 @@ public class MembershipRequestListener {
                 "La solicitud para ingresar al grupo: " + event.getGroup().getName() + " ha sido rechazada. Por favor, intente generando otra solicitud."
                 :
                 "La solicitud para ingresar al grupo: " + event.getGroup().getName() + " ha sido aceptada. Ya podes ver las tareas de otros miembros y crear nuevas.";
-        notificationService.createNotification(event.getUser(), message);
-        notificationController.sendNotificationToUser(event.getUser().getId(), message);
+        var notification = notificationService.createNotification(event.getUser(), message);
+        notificationController.sendNotificationToUser(event.getUser().getId(), new NotificationResponse(notification));
     }
 
     @EventListener
@@ -30,8 +31,8 @@ public class MembershipRequestListener {
         var message = "El usuario con nombre: " + event.getRequester().getFirstName() + " " + event.getRequester().getLastName() + " ha solicitado unirse al grupo: " + event.getGroup().getName();
         event.getGroup().getAdmins().forEach(
                 admin -> {
-                    notificationService.createNotification(admin, message);
-                    notificationController.sendNotificationToUser(admin.getId(), message);
+                    var notification = notificationService.createNotification(admin, message);
+                    notificationController.sendNotificationToUser(admin.getId(), new NotificationResponse(notification));
                 }
         );
     }
