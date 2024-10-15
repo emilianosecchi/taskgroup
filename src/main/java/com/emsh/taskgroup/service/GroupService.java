@@ -5,8 +5,6 @@ import com.emsh.taskgroup.dto.response.GroupResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
 import com.emsh.taskgroup.model.*;
 import com.emsh.taskgroup.repository.GroupRepository;
-import com.emsh.taskgroup.util.StringEncryptor;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,6 @@ import org.yaml.snakeyaml.util.EnumUtils;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 @Service
 public class GroupService {

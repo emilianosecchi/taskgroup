@@ -2,18 +2,17 @@ package com.emsh.taskgroup.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.List;
 import java.util.Objects;
 
-@Getter
-@Setter
-@ToString
+@Entity
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "_User")
 public class User {
 
@@ -36,6 +35,10 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<UserGroup> groups;
 
+    @ToString.Exclude
+    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    private List<Task> tasks;
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
@@ -54,6 +57,10 @@ public class User {
 
     public List<Group> getAllGroups() {
         return groups.stream().map(UserGroup::getGroup).toList();
+    }
+
+    public String getFullName() {
+        return getFirstName() + " " + getLastName();
     }
 
 }

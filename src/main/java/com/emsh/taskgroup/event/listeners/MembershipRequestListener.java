@@ -28,7 +28,7 @@ public class MembershipRequestListener {
 
     @EventListener
     public void onMembershipRequestCreatedEvent(MembershipRequestCreatedEvent event) {
-        var message = "El usuario con nombre: " + event.getRequester().getFirstName() + " " + event.getRequester().getLastName() + " ha solicitado unirse al grupo: " + event.getGroup().getName();
+        var message = "El usuario con nombre: " + event.getRequester().getFullName() + " ha solicitado unirse al grupo: " + event.getGroup().getName();
         event.getGroup().getAdmins().forEach(
                 admin -> {
                     var notification = notificationService.createNotification(admin, message);
