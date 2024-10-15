@@ -6,13 +6,12 @@ import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Entity
 @Table(name = "_Group")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Group {
 
     @Id

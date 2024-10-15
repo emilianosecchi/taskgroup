@@ -3,12 +3,11 @@ package com.emsh.taskgroup.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 @Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserGroup {
 
     @EmbeddedId

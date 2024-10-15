@@ -5,12 +5,11 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
-@Getter
-@Builder
 @Entity
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class MembershipRequest {
 
     @Id
