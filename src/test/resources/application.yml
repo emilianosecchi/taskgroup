@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:h2://mem:db;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret-key: 6170692D6261636B656E642D7461736B67726F75702D7365637265742D6B6579
+string-encrypt:
+  secret-key: taskgroup_secret

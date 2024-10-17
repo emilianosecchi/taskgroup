@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Entity
 @Table(name = "_Group")
@@ -29,6 +30,9 @@ public class Group {
 
     @Enumerated(EnumType.STRING)
     private GroupCategory category;
+
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
+    private List<Task> tasks;
 
     public List<User> getAdmins() {
         return participants
@@ -69,6 +73,18 @@ public class Group {
                 .map(User::getId)
                 .toList()
                 .contains(userId);
+    }
+
+    public List<Task> getCompletedTasks() {
+        return tasks.stream()
+                .filter(Task::isCompleted)
+                .toList();
+    }
+
+    public List<Task> getUncompletedTasks() {
+        return tasks.stream()
+                .filter(Predicate.not(Task::isCompleted))
+                .toList();
     }
 
 }

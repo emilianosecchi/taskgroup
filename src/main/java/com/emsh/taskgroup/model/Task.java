@@ -40,4 +40,9 @@ public class Task {
     private TaskPriority priority;
     @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<TaskSubElement> subElements;
+
+    public boolean isCompleted() {
+        return (endDate != null && finisher != null);
+    }
+
 }

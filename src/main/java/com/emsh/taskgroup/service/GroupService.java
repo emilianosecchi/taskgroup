@@ -5,6 +5,7 @@ import com.emsh.taskgroup.dto.response.GroupResponse;
 import com.emsh.taskgroup.exception.CustomApiException;
 import com.emsh.taskgroup.model.*;
 import com.emsh.taskgroup.repository.GroupRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -89,6 +90,30 @@ public class GroupService {
         var gr = GroupResponse.mapGroupToDto(group);
         gr.setGroupSize(group.getParticipants().size());
         return gr;
+    }
+
+    /**
+     * Retorna el listado de tareas sin finalizar de un grupo
+     * @param groupId grupo del cual se quieren obtener las tareas
+     * @return List<Task>
+     * @throws CustomApiException si el grupo no existe
+     */
+    @Transactional
+    public List<Task> getUncompletedTasks(Long groupId) throws CustomApiException {
+        var group = this.findGroupById(groupId);
+        return group.getUncompletedTasks();
+    }
+
+    /**
+     * Retorna el listado de tareas finalizadas de un grupo
+     * @param groupId grupo del cual se quieren obtener las tareas
+     * @return List<Task>
+     * @throws CustomApiException si el grupo no existe
+     */
+    @Transactional
+    public List<Task> getCompletedTasks(Long groupId) throws CustomApiException {
+        var group = this.findGroupById(groupId);
+        return group.getCompletedTasks();
     }
 
 }
